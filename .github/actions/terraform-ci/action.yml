@@ -1,5 +1,5 @@
 name: "Terraform CI"
-description: "Run terraform fmt, init, validate, and plan"
+description: "Run terraform fmt, init, validate, and apply"
 inputs:
   working_directory:
     description: "Directory containing Terraform configuration"
@@ -50,14 +50,7 @@ runs:
       working-directory: ${{ inputs.working_directory }}
       run: terraform validate
 
-    - name: Terraform Plan
+    - name: Terraform Apply
       shell: bash
       working-directory: ${{ inputs.working_directory }}
-      run: terraform plan -input=false -no-color -out=tfplan
-
-    - name: Upload plan artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: terraform-plan
-        path: ${{ inputs.working_directory }}/tfplan
-        if-no-files-found: error
+      run: terraform apply -input=false -auto-approve
