@@ -1,11 +1,11 @@
 variable "aws_account_id" {
-  type        = string
+  type = string
 }
 
 variable "github_owner" {
-  type        = string
+  type = string
 }
 
 variable "github_repo" {
-  type        = string
+  type = string
 }

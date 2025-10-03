@@ -58,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "github_actions" {
 
 
 module "lambdas" {
-  source           = "./lambdas"
-  lambdas          = local.lambdas
-  lambda_defaults  = local.lambda_defaults
+  source          = "./lambdas"
+  lambdas         = local.lambdas
+  lambda_defaults = local.lambda_defaults
 }
