@@ -82,7 +82,7 @@ jobs:
     name: Terraform plan
     runs-on: ubuntu-latest
     needs: [detect-changed-lambdas, build-lambdas]
-    if: ${{ always() }}
+    if: contains(github.event.head_commit.message, 'infra/') || contains(github.event.commits.*.modified, 'infra/') || contains(github.event.commits.*.added, 'infra/') || contains(github.event.commits.*.removed, 'infra/')
     permissions:
       id-token: write
       contents: read
@@ -101,7 +101,7 @@ jobs:
 
   frontend_deploy:
     name: Build and deploy frontend
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && contains(join(github.event.commits.*.modified, ' '), 'frontend/') || contains(join(github.event.commits.*.added, ' '), 'frontend/') || contains(join(github.event.commits.*.removed, ' '), 'frontend/')
     runs-on: ubuntu-latest
     permissions:
       id-token: write
