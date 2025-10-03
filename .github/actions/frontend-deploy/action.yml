@@ -4,7 +4,7 @@ inputs:
   bucket:
     description: "S3 bucket name to deploy to (without s3://)"
     required: true
-  role-to-assume:
+  role_to_assume:
     description: "AWS IAM role ARN to assume"
     required: true
 runs:
@@ -25,7 +25,7 @@ runs:
     - name: Configure AWS credentials (OIDC)
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: ${{ inputs.role-to-assume }}
+        role-to-assume: ${{ inputs.role_to_assume }}
         aws-region: "eu-west-2"
 
     - name: Build
