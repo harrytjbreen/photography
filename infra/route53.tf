@@ -8,8 +8,8 @@ resource "aws_route53_record" "photos" {
   type    = "A"
 
   alias {
-    name                   = aws_s3_bucket_website_configuration.frontend_bucket_website.website_domain
-    zone_id                = aws_s3_bucket.frontend_bucket.hosted_zone_id
+    name                   = aws_cloudfront_distribution.frontend.domain_name
+    zone_id                = aws_cloudfront_distribution.frontend.hosted_zone_id
     evaluate_target_health = false
   }
 }
