@@ -3,12 +3,14 @@ name: CI
 on:
   push:
     paths:
+      - 'frontend/**'
       - 'lambdas/**'
       - 'infra/**'
       - '.github/actions/**'
       - '.github/workflows/ci.yml'
   pull_request:
     paths:
+      - 'frontend/**'
       - 'lambdas/**'
       - 'infra/**'
       - '.github/actions/**'
@@ -56,3 +58,20 @@ jobs:
           configure_aws: 'true'
           aws_role_to_assume: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}
           aws_region: 'eu-west-1'
+
+  frontend_deploy:
+    name: Build and deploy frontend
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and Deploy Frontend
+        uses: ./.github/actions/frontend-deploy
+        with:
+          bucket: ${{ vars.FRONTEND_BUCKET }}
+          role_to_assume: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}

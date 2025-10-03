@@ -1,0 +1,60 @@
+name: "Build and Deploy Frontend"
+description: "Build Next.js frontend and deploy static export to S3"
+inputs:
+  bucket:
+    description: "S3 bucket name to deploy to (without s3://)"
+    required: true
+  role-to-assume:
+    description: "AWS IAM role ARN to assume"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+        cache: npm
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: frontend
+      run: npm ci
+
+    - name: Configure AWS credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.role-to-assume }}
+        aws-region: "eu-west-2"
+
+    - name: Build
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: ${{ inputs.build_command }}
+
+    - name: Export static site
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: ${{ inputs.export_command }}
+
+    - name: Show export directory
+      shell: bash
+      working-directory: frontend
+      run: |
+        echo "Exported files:" && ls -lah ${{ inputs.export_dir }}
+
+    - name: Sync to S3
+      shell: bash
+      working-directory: frontend
+      env:
+        AWS_REGION: "eu-west-1"
+      run: |
+        set -euo pipefail
+        # Upload static assets with long cache, HTML with no-cache to allow instant rollbacks
+        aws s3 sync "out" "s3://${{ inputs.bucket }}" \
+          --delete \
+          --exclude "*" --include "*.html"
+        aws s3 sync "${{ inputs.export_dir }}" "s3://${{ inputs.bucket }}" \
+          --delete \
+          --exclude "*.html"
