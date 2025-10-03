@@ -38,7 +38,7 @@ jobs:
           node_version: '22'
 
   terraform:
-    name: Terraform fmt/validate/plan
+    name: Terraform plan
     runs-on: ubuntu-latest
     permissions:
       id-token: write
