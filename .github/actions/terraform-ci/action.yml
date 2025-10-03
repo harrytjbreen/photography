@@ -1,0 +1,63 @@
+name: "Terraform CI"
+description: "Run terraform fmt, init, validate, and plan"
+inputs:
+  working_directory:
+    description: "Directory containing Terraform configuration"
+    required: false
+    default: "infra"
+  terraform_version:
+    description: "Terraform version to use"
+    required: false
+    default: "1.9.5"
+  configure_aws:
+    description: "Whether to configure AWS credentials via OIDC"
+    required: false
+    default: "false"
+  aws_role_to_assume:
+    description: "AWS role ARN to assume (if configure_aws=true)"
+    required: false
+  aws_region:
+    description: "AWS region"
+    required: false
+    default: "eu-west-1"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.terraform_version }}
+
+    - name: Configure AWS credentials (OIDC)
+      if: ${{ inputs.configure_aws == 'true' }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.aws_role_to_assume }}
+        aws-region: ${{ inputs.aws_region }}
+
+    - name: Terraform Format
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Init
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: terraform init -input=false
+
+    - name: Terraform Validate
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: terraform validate
+
+    - name: Terraform Plan
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: terraform plan -input=false -no-color -out=tfplan
+
+    - name: Upload plan artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan
+        path: ${{ inputs.working_directory }}/tfplan
+        if-no-files-found: error

@@ -1,0 +1,48 @@
+name: "Build Lambda"
+description: "Install deps, zip, and upload artifact for a Lambda"
+inputs:
+  lambda_name:
+    description: "Logical name of the lambda (used for zip/artifact)"
+    required: true
+  path:
+    description: "Path to the lambda source directory"
+    required: true
+  node_version:
+    description: "Node.js version to use"
+    required: false
+    default: "22"
+  artifact_name:
+    description: "Name for the uploaded artifact (defaults to <lambda_name>-artifact)"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+        cache: npm
+        cache-dependency-path: ${{ inputs.path }}/package-lock.json
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: npm ci
+
+    - name: Create zip artifact
+      shell: bash
+      working-directory: ${{ inputs.path }}/..
+      run: |
+        ZIP_NAME="${{ inputs.lambda_name }}.zip"
+        SRC_DIR="${{ inputs.lambda_name }}"
+        cd "$SRC_DIR"
+        zip -r "../$ZIP_NAME" . -x "**/.git/**" "**/.DS_Store" "**/node_modules/.cache/**"
+        cd ..
+        ls -lah ../
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name != '' && inputs.artifact_name || format('{0}-artifact', inputs.lambda_name) }}
+        path: ${{ inputs.path }}/../${{ inputs.lambda_name }}.zip
+        if-no-files-found: error
