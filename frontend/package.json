@@ -7,7 +7,6 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "export": "next export"
   },
   "dependencies": {
     "react": "19.1.0",

@@ -33,17 +33,6 @@ runs:
       working-directory: frontend
       run: npm run build
 
-    - name: Export static site
-      shell: bash
-      working-directory: frontend
-      run: npm run export
-
-    - name: Show export directory
-      shell: bash
-      working-directory: frontend
-      run: |
-        echo "Exported files:" && ls -lah out
-
     - name: Sync to S3
       shell: bash
       working-directory: frontend
