@@ -17,17 +17,56 @@ on:
       - '.github/workflows/ci.yml'
 
 jobs:
-  build-lambdas:
-    name: Build Lambda ${{ matrix.lambda_name }}
+  detect-changed-lambdas:
+    name: Detect changed Lambda directories
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_changes: ${{ steps.set-matrix.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compute matrix
+        id: set-matrix
+        shell: bash
+        run: |
+          set -eo pipefail
+          ROOT="lambdas"
+          # Determine base reference for diff
+          BASE_REF="${{ github.base_ref || github.ref_name }}"
+          BASE_SHA=$(git merge-base "origin/${BASE_REF}" HEAD 2>/dev/null || true)
+          if [ -z "$BASE_SHA" ]; then
+            BASE_SHA="HEAD~1"
+          fi
+          echo "Using BASE_SHA=$BASE_SHA"
+          # List changed files under lambdas
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" HEAD -- "$ROOT/" || true)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          # Derive unique lambda dirs at depth 3: lambdas/<group>/<lambda>
+          mapfile -t DIRS < <(printf "%s\n" "$CHANGED_FILES" | awk -F/ -v root="$ROOT" 'index($0, root"/")==1 && NF>=3 {print $1"/"$2"/"$3}' | sort -u)
+          if [ ${#DIRS[@]} -eq 0 ] || [ -z "${DIRS[0]}" ]; then
+            echo "No lambda directory changes detected."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+          else
+            printf "Detected changed lambda dirs: %s\n" "${DIRS[*]}"
+            ARRAY_JSON=$(printf "%s\n" "${DIRS[@]}" | jq -R -s 'split("\n") | map(select(length>0)) | map({lambda_name: (split("/")[2]), path: .})')
+            MATRIX_JSON=$(jq -c '{include: .}' <<< "$ARRAY_JSON")
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-lambdas:
+    name: Build changed Lambdas
+    runs-on: ubuntu-latest
+    needs: [detect-changed-lambdas]
+    if: ${{ needs.detect-changed-lambdas.outputs.has_changes == 'true' }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - lambda_name: photosHandler
-            path: lambdas/api/photosHandler
-          - lambda_name: rollsHandler
-            path: lambdas/api/rollsHandler
+      matrix: ${{ fromJson(needs.detect-changed-lambdas.outputs.matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,7 +81,8 @@ jobs:
   terraform:
     name: Terraform plan
     runs-on: ubuntu-latest
-    needs: [build-lambdas]
+    needs: [detect-changed-lambdas, build-lambdas]
+    if: ${{ always() }}
     permissions:
       id-token: write
       contents: read
