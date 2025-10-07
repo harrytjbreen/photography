@@ -17,19 +17,29 @@ on:
       - '.github/workflows/ci.yml'
 
 jobs:
-  build-lambdas:
-    name: Build all Lambdas
+  discover:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Build all Lambdas
-        shell: bash
+      - id: discover
         run: |
-          for dir in $(find lambdas -type f -name package.json -exec dirname {} \;); do
-            name=$(basename "$dir")
-            gh workflow run .github/actions/build-lambda --inputs "lambda_name=$name,path=$dir,node_version=22"
-          done
+          echo "matrix=$(find lambdas -type f -name package.json -exec dirname {} \; | jq -R -s -c 'split(\"\\n\") | map(select(length>0)) | map({lambda_name: (split(\"/\")[-1]), path: .})')" >> "$GITHUB_OUTPUT"
+
+  build-lambdas:
+    runs-on: ubuntu-latest
+    needs: discover
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-lambda
+        with:
+          lambda_name: ${{ matrix.lambda_name }}
+          path: ${{ matrix.path }}
+          node_version: 22
 
   terraform:
     name: Terraform plan
