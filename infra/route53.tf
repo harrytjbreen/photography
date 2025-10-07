@@ -15,7 +15,7 @@ resource "aws_route53_record" "photos" {
 }
 
 resource "aws_route53_record" "photos_api" {
-  zone_id = aws_route53_zone.harrybreen.zone_id
+  zone_id = data.aws_route53_zone.photos_zone.id
   name    = "api.photos.harrybreen.co.uk"
   type    = "A"
 
