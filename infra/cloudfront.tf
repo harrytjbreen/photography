@@ -68,9 +68,9 @@ resource "aws_cloudfront_distribution" "frontend" {
 }
 
 resource "aws_cloudfront_distribution" "api" {
-  enabled  = true
-  comment  = "Photos API distribution"
-  aliases  = ["api.photos.harrybreen.co.uk"]
+  enabled    = true
+  comment    = "Photos API distribution"
+  aliases    = ["api.photos.harrybreen.co.uk"]
   depends_on = [aws_acm_certificate_validation.frontend]
 
   origin {
@@ -79,11 +79,11 @@ resource "aws_cloudfront_distribution" "api" {
   }
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "POST", "PUT", "OPTIONS"]
-    cached_methods   = ["GET", "OPTIONS"]
-    target_origin_id = "api-gateway-origin"
+    allowed_methods        = ["GET", "POST", "PUT", "OPTIONS"]
+    cached_methods         = ["GET", "OPTIONS"]
+    target_origin_id       = "api-gateway-origin"
     viewer_protocol_policy = "redirect-to-https"
-    compress = true
+    compress               = true
     forwarded_values {
       query_string = true
       headers      = ["Authorization"]
