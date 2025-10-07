@@ -22,7 +22,6 @@ for (const lambda of lambdas) {
 
     console.log(`[RUN] Generating routes for ${lambda}...`);
 
-    // Run the lambda’s own script
     const result = spawnSync("npm", ["run", "generate:routes"], {
         cwd: lambdaDir,
         stdio: "inherit",
@@ -34,16 +33,29 @@ for (const lambda of lambdas) {
         continue;
     }
 
-    // Collect its routes.json
     const routesFile = path.join(lambdaDir, "routes.json");
     if (!fs.existsSync(routesFile)) {
         console.warn(`[WARN] ${lambda} has no routes.json after generation`);
         continue;
     }
 
-    const routes = JSON.parse(fs.readFileSync(routesFile, "utf8"));
-    aggregated[lambda] = routes;
+    const raw = JSON.parse(fs.readFileSync(routesFile, "utf8"));
+    const normalizedRoutes: string[] = Object.entries(raw).flatMap(([method, value]) => {
+        if (Array.isArray(value)) {
+            return value.map((p) => `${method} ${p}`);
+        }
+        if (value && typeof value === "object") {
+            return Object.keys(value as Record<string, unknown>).map((p) => `${method} ${p}`);
+        }
+        console.warn(`[WARN] ${lambda} has unexpected routes format for method ${method}`);
+        return [];
+    });
+    aggregated[lambda] = {
+        lambda_name: lambda,
+        routes: normalizedRoutes,
+    };
 }
 
+fs.mkdirSync(path.dirname(outputFile), { recursive: true });
 fs.writeFileSync(outputFile, JSON.stringify(aggregated, null, 2));
 console.log(`✅ Wrote combined routes to ${outputFile}`);
