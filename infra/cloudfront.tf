@@ -71,10 +71,10 @@ resource "aws_cloudfront_distribution" "api" {
   enabled    = true
   comment    = "Photos API distribution"
   aliases    = ["api.photos.harrybreen.co.uk"]
-  depends_on = [aws_acm_certificate_validation.frontend]
+  depends_on = [aws_acm_certificate_validation.api]
 
   origin {
-    domain_name = aws_apigatewayv2_domain_name.photos_api_domain.domain_name
+    domain_name = aws_apigatewayv2_domain_name.photos_api_domain.domain_name_configuration[0].target_domain_name
     origin_id   = "api-gateway-origin"
   }
 
@@ -87,6 +87,9 @@ resource "aws_cloudfront_distribution" "api" {
     forwarded_values {
       query_string = true
       headers      = ["Authorization"]
+      cookies {
+        forward = "none"
+      }
     }
   }
 
