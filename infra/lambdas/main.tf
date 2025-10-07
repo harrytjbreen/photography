@@ -31,7 +31,6 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/files/${each.key}.zip"
 }
 
-# Create the Lambda functions
 resource "aws_lambda_function" "lambda" {
   for_each         = var.lambdas
   filename         = data.archive_file.lambda_zip[each.key].output_path

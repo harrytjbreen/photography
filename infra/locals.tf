@@ -5,13 +5,11 @@ locals {
     runtime = "nodejs22.x"
   }
 
-  # Only per-function specifics go here
   lambdas = {
-    photosHandler = {
-      source_dir = "${path.module}/../lambdas/api/photosHandler"
-    }
-    rollsHandler = {
-      source_dir = "${path.module}/../lambdas/api/rollsHandler"
+    publicAPI = {
+      source_dir = "${path.module}/../lambdas/api/publicAPI"
     }
   }
+
+  lambda_routes = jsondecode(file(var.routes_file))
 }
