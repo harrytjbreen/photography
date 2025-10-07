@@ -69,11 +69,12 @@ runs:
       working-directory: ${{ inputs.working_directory }}
       env:
         TF_VAR_routes_file: generated_routes.json
-      run: terraform plan
+      run: terraform plan -out=tfplan.out
 
     - name: Terraform Apply
-      shell: bash
-      working-directory: ${{ inputs.working_directory }}
-      env:
-        TF_VAR_routes_file: infra/generated_routes.json
-      run: terraform apply -input=false -auto-approve
+        if: ${{ inputs.auto-apply == 'true' }}
+        shell: bash
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          TF_VAR_routes_file: generated_routes.json
+        run: terraform apply -auto-approve tfplan.out
