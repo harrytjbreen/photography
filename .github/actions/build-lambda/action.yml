@@ -37,14 +37,11 @@ runs:
     - name: Create zip artifact
       shell: bash
       working-directory: ${{ inputs.path }}/dist
-      run: |
-        ZIP_NAME="${{ inputs.lambda_name }}.zip"
-        zip -r "../$ZIP_NAME" . -x "**/.git/**" "**/.DS_Store" "**/node_modules/.cache/**"
-        ls -lah "../$ZIP_NAME"
+      run: zip -r ${{ inputs.lambda_name }}.zip .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact_name != '' && inputs.artifact_name || format('{0}-artifact', inputs.lambda_name) }}
-        path: ${{ inputs.path }}/${{ inputs.lambda_name }}.zip
+        path: ${{ inputs.path }}/dist/${{ inputs.lambda_name }}.zip
         if-no-files-found: error
