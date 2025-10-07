@@ -20,20 +20,25 @@ jobs:
   build-lambdas:
     name: Build all Lambdas
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(steps.discover.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build all Lambdas
+      - name: Discover Lambda directories
+        id: discover
         shell: bash
         run: |
-          for dir in $(find lambdas -type f -name package.json -exec dirname {} \;); do
-            name=$(basename "$dir")
-            npm ci --prefix "$dir"
-            npm run compile --prefix "$dir"
-            (cd "$dir/dist" && zip -r "$name.zip" .)
-            mkdir -p infra/lambdas/files
-            mv "$dir/dist/$name.zip" infra/lambdas/files/
-          done
+          echo "matrix=$(find lambdas -type f -name package.json -exec dirname {} \; | jq -R -s -c 'split("\n") | map(select(length>0)) | map({lambda_name: (split("/")[-1]), path: .})')" >> "$GITHUB_OUTPUT"
+
+      - name: Build and Package Lambda
+        uses: ./.github/actions/build-lambda
+        with:
+          lambda_name: ${{ matrix.lambda_name }}
+          path: ${{ matrix.path }}
+          node_version: 22
 
   terraform:
     name: Terraform plan
