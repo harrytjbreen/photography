@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { spawnSync } from "child_process";
 
-const projectRoot = path.resolve(__dirname, "../../..");
+const projectRoot = path.resolve(__dirname, "../..");
 const lambdasRoot = path.join(projectRoot, "lambdas/api");
 const outputFile = path.join(projectRoot, "infra/generated_routes.json");
 
@@ -13,7 +13,7 @@ const aggregated: Record<string, unknown> = {};
 
 for (const lambda of lambdas) {
     const lambdaDir = path.join(lambdasRoot, lambda);
-    const generateScript = path.join(lambdaDir, "scripts/generateRoutes.ts");
+    const generateScript = path.join(lambdaDir, "generateRoutes.ts");
 
     if (!fs.existsSync(generateScript)) {
         console.log(`[SKIP] ${lambda} has no generateRoutes.ts`);

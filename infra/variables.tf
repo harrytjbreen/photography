@@ -10,10 +10,12 @@ variable "github_repo" {
   type = string
 }
 
-variable "api_configs" {
-  description = "API Gateways and their routes"
-  type = map(object({
-    lambda_name = string
-    routes      = list(string)
-  }))
+locals {
+  lambda_routes = jsondecode(file(var.routes_file))
+}
+
+variable "routes_file" {
+  description = "Path to the generated routes file"
+  type        = string
+  default     = "infra/generated_routes.json"
 }

@@ -9,16 +9,14 @@ resource "aws_apigatewayv2_api" "main_api" {
   }
 }
 
-# Default deployment stage
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.main_api.id
   name        = "$default"
   auto_deploy = true
 }
 
-# Create one integration per Lambda (so multiple Lambdas can be behind one API Gateway)
 resource "aws_apigatewayv2_integration" "lambda_integration" {
-  for_each               = var.api_configs
+  for_each               = local.lambda_routes
   api_id                 = aws_apigatewayv2_api.main_api.id
   integration_type       = "AWS_PROXY"
   integration_uri        = module.lambdas.lambda_invoke_arns[each.value.lambda_name]
@@ -26,11 +24,10 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   payload_format_version = "2.0"
 }
 
-# Create all routes for all APIs, each mapped to its Lambda integration
 resource "aws_apigatewayv2_route" "routes" {
   for_each = {
     for pair in flatten([
-      for api_name, config in var.api_configs : [
+      for api_name, config in local.lambda_routes : [
         for r in config.routes : {
           api_name  = api_name
           route_key = r
@@ -44,9 +41,8 @@ resource "aws_apigatewayv2_route" "routes" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration[each.value.api_name].id}"
 }
 
-# Allow API Gateway to invoke all lambdas
 resource "aws_lambda_permission" "apigw_invoke" {
-  for_each      = var.api_configs
+  for_each      = local.lambda_routes
   statement_id  = "AllowExecutionFromAPIGateway-${each.key}"
   action        = "lambda:InvokeFunction"
   function_name = module.lambdas.lambda_names[each.value.lambda_name]
@@ -54,7 +50,6 @@ resource "aws_lambda_permission" "apigw_invoke" {
   source_arn    = "${aws_apigatewayv2_api.main_api.execution_arn}/*/*"
 }
 
-# Output shared API Gateway endpoint
 output "api_gateway_url" {
   value = aws_apigatewayv2_api.main_api.api_endpoint
 }
