@@ -7,7 +7,7 @@ interface LambdaEvent extends APIGatewayProxyEvent {
 
 type Handler = (event: LambdaEvent) => Promise<unknown>;
 
-const routes: Record<string, Record<string, Handler>> = {
+export const routes: Record<string, Record<string, Handler>> = {
     GET: {
         "/collections": getAllCollections,
     },

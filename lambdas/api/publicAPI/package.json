@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "generate:routes": "tsc --project tsconfig.json && node dist/generateRoutes.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -14,6 +15,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.153",
-    "@types/node": "^24.7.0"
+    "@types/node": "^24.7.0",
+    "ts-node": "^10.9.2"
   }
 }
