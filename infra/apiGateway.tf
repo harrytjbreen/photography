@@ -60,8 +60,6 @@ resource "aws_apigatewayv2_domain_name" "photos_api_domain" {
   }
 }
 
-# Map the custom domain to the HTTP API's $default stage so requests to the
-# custom domain are routed to the Lambda integration instead of returning 404.
 resource "aws_apigatewayv2_api_mapping" "photos_api_default" {
   api_id      = aws_apigatewayv2_api.main_api.id
   domain_name = aws_apigatewayv2_domain_name.photos_api_domain.domain_name
