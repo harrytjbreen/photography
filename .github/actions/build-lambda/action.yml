@@ -43,5 +43,5 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact_name != '' && inputs.artifact_name || format('{0}-artifact', inputs.lambda_name) }}
-        path: ${{ inputs.path }}/dist/${{ inputs.lambda_name }}.zip
+        path: ${{ inputs.path }}/${{ inputs.lambda_name }}.zip
         if-no-files-found: error
