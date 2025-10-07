@@ -31,6 +31,7 @@ resource "aws_acm_certificate_validation" "frontend" {
 }
 
 resource "aws_acm_certificate" "api" {
+  provider          = aws.us_east_1
   domain_name       = "api.photos.harrybreen.co.uk"
   validation_method = "DNS"
 
