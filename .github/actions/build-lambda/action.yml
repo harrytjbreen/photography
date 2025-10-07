@@ -30,9 +30,9 @@ runs:
       run: npm ci
 
     - name: Compile Lambda
-        shell: bash
-        working-directory: ${{ inputs.path }}
-        run: npm run compile
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: npm run compile
 
     - name: Create zip artifact
       shell: bash
