@@ -18,10 +18,30 @@ resource "aws_iam_role" "api_lambda_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "api_lambda_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+# Allow Lambda functions to read from DynamoDB tables
+resource "aws_iam_policy" "api_lambda_dynamodb_policy" {
+  name        = "api_lambda_dynamodb_policy"
+  description = "Allow Lambda functions to read from DynamoDB tables"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:Scan",
+          "dynamodb:GetItem"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "api_lambda_dynamodb_policy_attachment" {
+  policy_arn = aws_iam_policy.api_lambda_dynamodb_policy.arn
   role       = aws_iam_role.api_lambda_role.name
 }
+
 
 resource "aws_lambda_function" "lambda" {
   for_each         = var.lambdas
