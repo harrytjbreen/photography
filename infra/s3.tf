@@ -45,3 +45,19 @@ resource "aws_s3_bucket_policy" "frontend_allow_cf" {
     ]
   })
 }
+
+resource "aws_s3_bucket" "photos_bucket" {
+  bucket = "photos-storage-${var.aws_account_id}"
+
+  tags = {
+    Name = "photos-storage"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "photos_bucket_public_access" {
+  bucket                  = aws_s3_bucket.photos_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
