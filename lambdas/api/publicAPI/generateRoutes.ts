@@ -1,10 +1,10 @@
 import * as fs from "fs";
 import * as path from "path";
 
-const routesPath = path.resolve(__dirname, "../src/routes");
+const routesPath = path.resolve(__dirname, "./src/routes");
 const { routes } = require(routesPath);
 
-const outputPath = path.resolve(__dirname, "../routes.json");
+const outputPath = path.resolve(__dirname, "./routes.json");
 
 const simplifiedRoutes: Record<string, string[]> = Object.entries(routes).reduce(
     (acc, [method, paths]) => {
