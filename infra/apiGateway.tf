@@ -50,6 +50,16 @@ resource "aws_lambda_permission" "apigw_invoke" {
   source_arn    = "${aws_apigatewayv2_api.main_api.execution_arn}/*/*"
 }
 
+resource "aws_apigatewayv2_domain_name" "photos_api_domain" {
+  domain_name = "api.photos.harrybreen.co.uk"
+
+  domain_name_configuration {
+    certificate_arn = aws_acm_certificate_validation.api.certificate_arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+}
+
 output "api_gateway_url" {
   value = aws_apigatewayv2_api.main_api.api_endpoint
 }

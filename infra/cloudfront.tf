@@ -74,7 +74,7 @@ resource "aws_cloudfront_distribution" "api" {
   depends_on = [aws_acm_certificate_validation.frontend]
 
   origin {
-    domain_name = aws_apigatewayv2_domain_name.photos_api_domain.domain_name_configuration[0].target_domain_name
+    domain_name = aws_apigatewayv2_domain_name.photos_api_domain.domain_name
     origin_id   = "api-gateway-origin"
   }
 
