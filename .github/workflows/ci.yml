@@ -110,6 +110,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Download built Lambda artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-artifact"
+          path: infra/lambdas/files
+          merge-multiple: true
+
       - name: Terraform CI
         uses: ./.github/actions/terraform-ci
         with:

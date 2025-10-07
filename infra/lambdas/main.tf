@@ -23,20 +23,12 @@ resource "aws_iam_role_policy_attachment" "api_lambda_policy" {
   role       = aws_iam_role.api_lambda_role.name
 }
 
-# Package each lambda into a zip
-data "archive_file" "lambda_zip" {
-  for_each    = var.lambdas
-  type        = "zip"
-  source_dir  = each.value.source_dir
-  output_path = "${path.module}/files/${each.key}.zip"
-}
-
 resource "aws_lambda_function" "lambda" {
   for_each         = var.lambdas
-  filename         = data.archive_file.lambda_zip[each.key].output_path
+  filename         = "${path.module}/files/${each.key}.zip"
   function_name    = each.key
   role             = aws_iam_role.api_lambda_role.arn
   handler          = var.lambda_defaults.handler
-  source_code_hash = data.archive_file.lambda_zip[each.key].output_base64sha256
+  source_code_hash = filebase64sha256("${path.module}/files/${each.key}.zip")
   runtime          = var.lambda_defaults.runtime
 }

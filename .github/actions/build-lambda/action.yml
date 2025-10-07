@@ -37,7 +37,7 @@ runs:
     - name: Create zip artifact
       shell: bash
       working-directory: ${{ inputs.path }}
-      run: zip -r ${{ inputs.lambda_name }}.zip dist package.json node_modules
+      run: test -d dist && [ "$(ls -A dist)" ] || { echo "dist directory is missing or empty"; exit 1; }; (cd dist && zip -r ../${{ inputs.lambda_name }}.zip .)
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
