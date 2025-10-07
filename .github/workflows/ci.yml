@@ -17,79 +17,25 @@ on:
       - '.github/workflows/ci.yml'
 
 jobs:
-  discover-lambdas:
-    name: Discover changed Lambda directories
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-      has_changes: ${{ steps.set-matrix.outputs.has_changes }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Detect changed lambdas (any depth)
-        id: set-matrix
-        shell: bash
-        run: |
-          set -euo pipefail
-          ROOT="lambdas"
-
-          # Ensure we have the remote refs to compute a proper merge-base
-          git fetch --no-tags --prune --depth=2 origin +refs/heads/*:refs/remotes/origin/* >/dev/null 2>&1 || true
-
-          # Determine a reasonable base for comparison (PR base branch or main; fallback to HEAD~1)
-          BASE_REF="${{ github.base_ref || 'main' }}"
-          BASE_SHA=$(git merge-base "origin/${BASE_REF}" HEAD 2>/dev/null || true)
-          if [ -z "${BASE_SHA:-}" ]; then
-            BASE_SHA=$(git rev-parse HEAD~1)
-          fi
-          echo "Using BASE_SHA=$BASE_SHA"
-
-          # Collect changed files under lambdas/**
-          CHANGED=$(git diff --name-only "$BASE_SHA" HEAD -- "$ROOT/" || true)
-          echo "Changed files under $ROOT/:\n$CHANGED"
-
-          # Build a set of lambda roots by walking each changed file up to the nearest dir that has a package.json
-          declare -A SEEN=()
-          while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            d="$f"
-            while [ "$d" != "." ] && [ "$d" != "/" ]; do
-              if [ -f "$d/package.json" ]; then
-                SEEN["$d"]=1
-                break
-              fi
-              d="$(dirname "$d")"
-            done
-          done <<< "$CHANGED"
-
-          if [ ${#SEEN[@]} -eq 0 ]; then
-            echo "No Lambda directory changes detected."
-            echo 'has_changes=false' >> "$GITHUB_OUTPUT"
-            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          printf "%s\n" "${!SEEN[@]}" | sort -u | jq -R -s -c 'split("\n") | map(select(length>0)) | map({lambda_name: (split("/")[-1]), path: .})' > /tmp/matrix.json
-          echo "Detected Lambda roots:"; cat /tmp/matrix.json
-
-          echo 'has_changes=true' >> "$GITHUB_OUTPUT"
-          echo "matrix={\"include\": $(cat /tmp/matrix.json)}" >> "$GITHUB_OUTPUT"
-
   build-lambdas:
     name: Build changed Lambdas
     runs-on: ubuntu-latest
-    needs: [discover-lambdas]
-    if: ${{ needs.discover-lambdas.outputs.has_changes == 'true' }}
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.discover-lambdas.outputs.matrix).include }}
+        include: []
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Discover Lambda directories
+        id: discover
+        shell: bash
+        run: |
+          echo "matrix=$(find lambdas -type f -name package.json -exec dirname {} \; | jq -R -s -c 'split("\n") | map(select(length>0)) | map({lambda_name: (split("/")[-1]), path: .})')" >> "$GITHUB_OUTPUT"
+
+      - name: Set matrix
+        run: echo "Matrix: ${{ steps.discover.outputs.matrix }}"
 
       - name: Build and Package Lambda
         uses: ./.github/actions/build-lambda
@@ -97,6 +43,8 @@ jobs:
           lambda_name: ${{ matrix.lambda_name }}
           path: ${{ matrix.path }}
           node_version: 22
+        strategy:
+          matrix: ${{ fromJson(steps.discover.outputs.matrix) }}
 
   terraform:
     name: Terraform plan
