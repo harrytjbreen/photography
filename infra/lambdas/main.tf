@@ -31,4 +31,7 @@ resource "aws_lambda_function" "lambda" {
   handler          = var.lambda_defaults.handler
   source_code_hash = filebase64sha256("${path.module}/files/${each.key}.zip")
   runtime          = var.lambda_defaults.runtime
+  environment {
+    variables = lookup(each.value, "environment_variables", {})
+  }
 }

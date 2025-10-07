@@ -8,6 +8,9 @@ locals {
   lambdas = {
     publicAPI = {
       source_dir = "${path.module}/../lambdas/api/publicAPI"
+      environment_variables = {
+        PHOTOS_TABLE = "photos-app"
+      }
     }
   }
 
