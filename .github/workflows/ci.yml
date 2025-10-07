@@ -34,7 +34,8 @@ jobs:
     needs: discover
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.discover.outputs.matrix || '[]') }}
+      matrix:
+        include: ${{ fromJson(needs.discover.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/build-lambda
