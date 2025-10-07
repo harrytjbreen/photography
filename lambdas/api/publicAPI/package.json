@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "generate:routes": "tsc --project tsconfig.json && node dist/generateRoutes.js",
+    "generate:routes": "ts-node --transpile-only ./scripts/generateRoutes.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
