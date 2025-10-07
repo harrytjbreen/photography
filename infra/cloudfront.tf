@@ -74,7 +74,12 @@ resource "aws_cloudfront_distribution" "api" {
   depends_on = [aws_acm_certificate_validation.api]
 
   origin {
-    domain_name = aws_apigatewayv2_domain_name.photos_api_domain.domain_name_configuration[0].target_domain_name
+    # Use the API Gateway default execute-api endpoint as the origin. When placing
+    # CloudFront in front of an API Gateway custom domain, API Gateway requires the
+    # Host header to match the custom domain for base-path mapping to work. CloudFront
+    # does not forward the viewer Host header to the origin, which leads to 404s.
+    # Pointing to the default endpoint avoids that requirement and works reliably.
+    domain_name = trimsuffix(replace(aws_apigatewayv2_api.main_api.api_endpoint, "https://", ""), "/")
     origin_id   = "api-gateway-origin"
 
     custom_origin_config {
