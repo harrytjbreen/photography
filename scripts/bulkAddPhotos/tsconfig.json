@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "outDir": "dist",
+    "rootDir": ".",
     "module": "commonjs",
-    "lib": ["es2017"],
-    "strict": true,
+    "target": "es2019",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "strict": true,
     "skipLibCheck": true
-  }
+  },
+  "include": ["**/*.ts"]
 }

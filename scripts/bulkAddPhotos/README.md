@@ -2,7 +2,7 @@
 
 ## Overview
 
-This script automates the bulk upload of photos to AWS S3 and indexes metadata in AWS DynamoDB. It is designed to help you efficiently add large numbers of photos, organizing them into rolls within your DynamoDB tables while storing the actual image files in S3 buckets.
+This script automates the bulk upload of photos to AWS S3 and indexes metadata in AWS DynamoDB. It is designed to help you efficiently add large numbers of photos, organizing them into collections within your DynamoDB table while storing the actual image files in S3 buckets.
 
 ## Prerequisites
 
@@ -10,7 +10,7 @@ Before using this script, ensure you have the following:
 
 - **Node.js**: The script runs on Node.js. You can download it from [nodejs.org](https://nodejs.org/).
 - **AWS Credentials**: You must have AWS credentials configured with permissions to access S3 and DynamoDB. These can be set up via the AWS CLI or environment variables.
-- **DynamoDB Tables and S3 Bucket**: You need an existing DynamoDB setup with tables for rolls and photos, as well as an S3 bucket where photos will be stored.
+- **DynamoDB Table and S3 Bucket**: You need an existing DynamoDB setup with a single table for collections and photos, as well as an S3 bucket where photos will be stored.
 
 ## Installation
 
@@ -21,10 +21,10 @@ Before using this script, ensure you have the following:
    ```
    npm install
    ```
-
+   
 ## Configuration
 
-Configure your AWS credentials and region using one of the following methods:
+This script is written in TypeScript. Configure your AWS credentials and region using one of the following methods:
 
 - Export environment variables:
 
@@ -36,32 +36,45 @@ Configure your AWS credentials and region using one of the following methods:
 
 - Or configure the AWS CLI and ensure the default profile is set up.
 
-Update any script-specific configuration such as DynamoDB table names or S3 bucket names in the script or a configuration file, if applicable.
+Update any script-specific configuration such as DynamoDB table name or S3 bucket name in the script or a configuration file, if applicable.
 
 ## Running the Script
 
-Run the bulk upload script using Node.js. Example commands:
+Before running the script, you need to compile the TypeScript source (`index.ts`) to JavaScript. This is handled automatically using the provided npm run script.
+
+To run the bulk upload script, use the following command:
 
 ```
-node index.js --input /path/to/photos --roll "Roll 1"
+npm run run -- --input "./4 - Portra 160" --collection "Fire Summer 2025"
 ```
 
 - `--input`: Path to the directory containing photos to upload.
-- `--roll`: Name of the roll within the collection.
+- `--collection`: Name of the collection within the database.
+
+This command will compile the TypeScript code to JavaScript and then execute it. The npm run script defined in `package.json` takes care of both steps automatically, so you do not need to manually invoke the TypeScript compiler or run the output file.
 
 Additional command line options may be available depending on the script implementation.
 
 ## Data Model
 
-- **Rolls**: Subsets representing individual photo shoots or batches. Stored in DynamoDB linked to photos.
-- **Photos**: Individual photo metadata entries stored in DynamoDB, with references to their roll. The actual image files are stored in an S3 bucket, organized by roll.
+- **Collections**: Subsets representing individual photo shoots or batches. Stored in a single DynamoDB table linked to photos.
+- **Photos**: Individual photo metadata entries stored in the same DynamoDB table, with references to their collection. The actual image files are stored in an S3 bucket, organized by collection.
 
 ## Notes / Troubleshooting
 
 - Ensure your AWS credentials have the necessary permissions for S3 and DynamoDB operations.
-- Verify that your DynamoDB tables and S3 bucket exist and are properly configured.
+- Verify that your DynamoDB table and S3 bucket exist and are properly configured.
 - If you encounter permission errors, double-check your IAM policies.
 - For large uploads, consider AWS service limits and possible throttling.
 - Review logs/output for error messages to help diagnose issues.
+
+### S3 `NoSuchBucket` Error
+
+If you encounter an error such as `NoSuchBucket: The specified bucket does not exist`, this means the S3 bucket specified in your script either does not exist in your AWS account or is misconfigured.
+
+- **Check that the bucket name in your script or configuration matches the actual bucket name in AWS S3.** Bucket names are case-sensitive and must match exactly.
+- **Ensure the bucket exists in the AWS region you are using.** Buckets are region-specific.
+- **Verify your AWS credentials have permission to access the target bucket.** You may need to check your IAM policies or roles.
+- **If you are setting the bucket name via environment variables or a configuration file, double-check those values.** Make sure the environment variable or config matches the bucket name in AWS.
 
 For further assistance, consult the AWS SDK documentation or your project maintainer.
