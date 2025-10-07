@@ -22,7 +22,7 @@ resource "aws_iam_role" "api_lambda_role" {
 resource "aws_iam_policy" "api_lambda_dynamodb_policy" {
   name        = "api_lambda_dynamodb_policy"
   description = "Allow Lambda functions to read from DynamoDB tables"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
