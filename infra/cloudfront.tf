@@ -86,7 +86,7 @@ resource "aws_cloudfront_distribution" "api" {
   }
 
   default_cache_behavior {
-    allowed_methods        = ["GET", "POST", "PUT", "OPTIONS"]
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods         = ["GET", "OPTIONS"]
     target_origin_id       = "api-gateway-origin"
     viewer_protocol_policy = "redirect-to-https"

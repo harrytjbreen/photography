@@ -13,5 +13,5 @@ variable "github_repo" {
 variable "routes_file" {
   description = "Path to the generated routes file"
   type        = string
-  default     = "infra/generated_routes.json"
+  default     = "generated_routes.json"
 }
