@@ -68,7 +68,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
-        TF_VAR_routes_file: infra/generated_routes.json
+        TF_VAR_routes_file: generated_routes.json
       run: terraform plan
 
     - name: Terraform Apply
