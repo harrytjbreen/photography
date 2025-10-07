@@ -9,6 +9,7 @@ resource "aws_acm_certificate" "frontend" {
 }
 
 resource "aws_route53_record" "frontend_cert_validation" {
+  allow_overwrite = true
   for_each = {
     for dvo in aws_acm_certificate.frontend.domain_validation_options : dvo.domain_name => {
       name  = dvo.resource_record_name
@@ -41,6 +42,7 @@ resource "aws_acm_certificate" "api_cf" {
 }
 
 resource "aws_route53_record" "api_cf_cert_validation" {
+  allow_overwrite = true
   for_each = {
     for dvo in aws_acm_certificate.api_cf.domain_validation_options : dvo.domain_name => {
       name  = dvo.resource_record_name
@@ -73,6 +75,7 @@ resource "aws_acm_certificate" "api_gateway" {
 }
 
 resource "aws_route53_record" "api_gateway_cert_validation" {
+  allow_overwrite = true
   for_each = {
     for dvo in aws_acm_certificate.api_gateway.domain_validation_options : dvo.domain_name => {
       name  = dvo.resource_record_name
