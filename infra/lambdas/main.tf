@@ -29,7 +29,8 @@ resource "aws_iam_policy" "api_lambda_dynamodb_policy" {
         Effect = "Allow"
         Action = [
           "dynamodb:Scan",
-          "dynamodb:GetItem"
+          "dynamodb:GetItem",
+          "dynamodb:Query"
         ]
         Resource = "*"
       }
