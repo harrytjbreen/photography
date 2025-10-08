@@ -5,7 +5,7 @@ import { unmarshall } from "@aws-sdk/util-dynamodb";
 class PhotosService {
     private client = new DynamoDBClient({});
 
-    public getPhotosByCollectionId = async (collectionId: string): Promise<Photo[]> => {
+    public getPhotosByCollectionId = async (collectionId: string): Promise<Photo[] | undefined> => {
         if (!collectionId) throw new Error("Collection name is required");
 
         const params = {
@@ -25,22 +25,17 @@ class PhotosService {
 
         return (
             result.Items?.map((item) => {
-                const typedItem = this.parsePhoto(item);
-                return {
-                    FileName: typedItem.FileName,
-                    S3Key: typedItem.S3Key,
-                    UploadedAt: typedItem.UploadedAt,
-                };
-            }) ?? []
+                return this.parsePhotoToDTO(item);
+            }).filter((item) => item.S3Key)
         );
     };
 
-    public parsePhoto = (item: Record<string, AttributeValue>): Photo => {
+    public parsePhotoToDTO = (item: Record<string, AttributeValue>): Photo => {
         const u = unmarshall(item);
         return {
-            FileName: u.fileName ?? "Unknown",
-            S3Key: u.s3Key ?? "Unknown",
-            UploadedAt: u.createdAt ?? "Unknown",
+            FileName: u.FileName,
+            S3Key: u.S3Key,
+            UploadedAt: u.UploadedAt,
         };
     };
 }
