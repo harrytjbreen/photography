@@ -5,8 +5,8 @@ import { unmarshall } from "@aws-sdk/util-dynamodb";
 class PhotosService {
     private client = new DynamoDBClient({});
 
-    public getPhotosByCollectionName = async (collectionName: string): Promise<Photo[]> => {
-        if (!collectionName) throw new Error("Collection name is required");
+    public getPhotosByCollectionId = async (collectionId: string): Promise<Photo[]> => {
+        if (!collectionId) throw new Error("Collection name is required");
 
         const params = {
             TableName: process.env.PHOTOS_TABLE!,
@@ -16,7 +16,7 @@ class PhotosService {
                 "#sk": "SK",
             },
             ExpressionAttributeValues: {
-                ":pk": { S: `COLLECTION#${collectionName}` },
+                ":pk": { S: `COLLECTION#${collectionId}` },
                 ":skPrefix": { S: "PHOTO#" },
             },
         };

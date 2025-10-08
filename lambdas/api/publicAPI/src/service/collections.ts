@@ -18,11 +18,7 @@ class CollectionsService {
 
         return (
             response.Items?.map((item) => {
-                const typedItem = this.parseCollection(item);
-                return {
-                    Name: typedItem.Name,
-                    CreatedAt: typedItem.CreatedAt
-                };
+                return this.parseCollection(item)
             })
         );
     };
@@ -30,6 +26,7 @@ class CollectionsService {
     public parseCollection = (item: Record<string, AttributeValue>): Collection => {
         return {
             Name: item.Name?.S ?? 'Unknown',
+            CollectionId: item.CollectionId?.S ?? 'Unknown',
             CreatedAt: item.CreatedAt?.S ?? 'Unknown',
             EntityType: item.EntityType?.S ?? 'Unknown',
         };
