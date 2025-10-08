@@ -9,8 +9,8 @@ const routesFile = project.addSourceFileAtPath(path.resolve(__dirname, "./src/ro
 const routesVar = routesFile.getVariableDeclarationOrThrow("routes");
 const text = routesVar.getInitializerOrThrow().getText();
 
-// Simple regex to match route strings like "/collections" and "/photos/:id"
-const pathRegex = /["'`](\/[A-Za-z0-9:\/_-]+)["'`]\s*:/g;
+// Simple regex to match route strings like "/collections", "/photos/{id}"
+const pathRegex = /["'`](\/[A-Za-z0-9\/_\-{}]+)["'`]\s*:/g;
 
 const matches = [...text.matchAll(pathRegex)].map(m => m[1]);
 
@@ -20,4 +20,3 @@ const outputPath = path.resolve(__dirname, "./routes.json");
 fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
 
 console.log(`✅ Extracted routes: ${matches.length}`);
-console.log(`✅ Generated routes.json at: ${outputPath}`);
