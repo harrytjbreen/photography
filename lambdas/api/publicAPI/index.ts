@@ -19,7 +19,7 @@ export const handler = async (event: LambdaEvent): Promise<APIGatewayProxyResult
     }
 
     for (const [pattern, handler] of Object.entries(routeSet)) {
-        const paramMatch = pattern.match(/^(.+):([^/]+)$/);
+        const paramMatch = pattern.match(/^(.+)\{([^/]+)\}$/);
         if (paramMatch) {
             const base = paramMatch[1];
             if (path.startsWith(base)) {

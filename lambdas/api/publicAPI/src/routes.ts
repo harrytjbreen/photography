@@ -5,6 +5,6 @@ import {Handler} from "../index";
 export const routes: Record<string, Record<string, Handler>> = {
     GET: {
         "/collections": getAllCollections,
-        "/photos/:id": getAllPhotosByCollectionId,
+        "/photos/{id}": getAllPhotosByCollectionId,
     },
 };
