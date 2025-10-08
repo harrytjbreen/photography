@@ -23,7 +23,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: LambdaEvent) => {
             const base = paramMatch[1];
             if (path.startsWith(base)) {
                 event.pathParams = { [paramMatch[2]]: path.slice(base.length + 1) };
-                return jsonResponse(await handler(event), 200);
+                return await handler(event)
             }
         }
     }
