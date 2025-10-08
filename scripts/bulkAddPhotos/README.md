@@ -2,7 +2,7 @@
 
 ## Overview
 
-This script automates the bulk upload of photos to AWS S3 and indexes metadata in AWS DynamoDB. It is designed to help you efficiently add large numbers of photos, organizing them into collections within your DynamoDB table while storing the actual image files in S3 buckets.
+This script automates the bulk upload of photos to AWS S3 and indexes metadata in AWS DynamoDB. It is designed to efficiently add large numbers of photos, organizing them into collections within your DynamoDB table while storing the actual image files in S3 buckets. The script supports specifying both a collection identifier (`collectionId`) used as a slug and a human-readable collection name (`collectionName`) for display purposes.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ Before using this script, ensure you have the following:
    ```
    npm install
    ```
-   
+
 ## Configuration
 
 This script is written in TypeScript. Configure your AWS credentials and region using one of the following methods:
@@ -40,27 +40,28 @@ Update any script-specific configuration such as DynamoDB table name or S3 bucke
 
 ## Running the Script
 
-Before running the script, you need to compile the TypeScript source (`index.ts`) to JavaScript. This is handled automatically using the provided npm run script.
+Before running the script, compile the TypeScript source (`index.ts`) to JavaScript. This is handled automatically using the provided npm run script.
 
 To run the bulk upload script, use the following command:
 
 ```
-npm run run -- --input "./4 - Portra 160" --collection "Fire Summer 2025"
+npm run run -- --input "folder" --collectionId "collection-slug" --collectionName "Collection Display Name"
 ```
 
 - `--input`: Path to the directory containing photos to upload.
-- `--collection`: Name of the collection within the database.
+- `--collectionId`: A slug or unique identifier for the collection (used for organizing files and indexing).
+- `--collectionName`: The human-readable name of the collection for display purposes.
 
-This command will compile the TypeScript code to JavaScript and then execute it. The npm run script defined in `package.json` takes care of both steps automatically, so you do not need to manually invoke the TypeScript compiler or run the output file.
+Both `--collectionId` and `--collectionName` are required to properly categorize and label the uploaded photos within your DynamoDB table and S3 bucket.
 
 Additional command line options may be available depending on the script implementation.
 
 ## Data Model
 
-- **Collections**: Subsets representing individual photo shoots or batches. Stored in a single DynamoDB table linked to photos.
-- **Photos**: Individual photo metadata entries stored in the same DynamoDB table, with references to their collection. The actual image files are stored in an S3 bucket, organized by collection.
+- **Collections**: Represented by a unique `collectionId` (slug) and a `collectionName` (display name). Collections group individual photo entries and are stored in a single DynamoDB table alongside photos.
+- **Photos**: Individual photo metadata entries stored in the same DynamoDB table, linked to their collection via the `collectionId`. The actual image files are stored in an S3 bucket, organized by the collection slug.
 
-## Notes / Troubleshooting
+## Troubleshooting
 
 - Ensure your AWS credentials have the necessary permissions for S3 and DynamoDB operations.
 - Verify that your DynamoDB table and S3 bucket exist and are properly configured.

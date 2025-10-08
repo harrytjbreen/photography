@@ -10,32 +10,38 @@ const REGION = process.env.AWS_REGION || "eu-west-1";
 const BUCKET = process.env.PHOTOS_BUCKET || "photos-storage-688547931126";
 const TABLE = process.env.PHOTOS_TABLE || "photos-app";
 
-// Usage: ts-node bulkAddPhotos.ts ./photos <collectionId>
+// Usage: ts-node bulkAddPhotos.ts ./photos <collectionId> --collectionName "My Collection"
 const argv = yargs(hideBin(process.argv))
     .option("input", {
         type: "string",
         demandOption: true,
         describe: "Path to the directory containing photos to upload"
     })
-    .option("collection", {
+    .option("collectionId", {
         type: "string",
         demandOption: true,
-        describe: "Name of the collection to upload to"
+        describe: "Slug or machine-friendly identifier of the collection to upload to"
+    })
+    .option("collectionName", {
+        type: "string",
+        demandOption: true,
+        describe: "Human-readable display name of the collection"
     })
     .parseSync();
 
 const photosDir = argv.input;
-const collectionId = argv.collection;
+const collectionId = argv.collectionId;
+const collectionName = argv.collectionName || collectionId;
 
 if (!photosDir || !collectionId) {
-    console.error("Usage: ts-node bulkAddPhotos.ts <photosDir> <collectionId>");
+    console.error("Usage: ts-node bulkAddPhotos.ts <photosDir> --collectionId <collectionId> [--collectionName <collectionName>]");
     process.exit(1);
 }
 
 const s3 = new S3Client({ region: REGION });
 const ddb = new DynamoDBClient({ region: REGION });
 
-async function ensureCollectionMetadata(collectionId: string) {
+async function ensureCollectionMetadata(collectionId: string, collectionName: string) {
     const now = new Date().toISOString();
     try {
         await ddb.send(new PutItemCommand({
@@ -44,12 +50,13 @@ async function ensureCollectionMetadata(collectionId: string) {
                 PK: { S: `COLLECTION#${collectionId}` },
                 SK: { S: `COLLECTION#${collectionId}` },
                 EntityType: { S: "Collection" },
-                Name: { S: collectionId },
+                CollectionId: { S: collectionId },
+                Name: { S: collectionName },
                 CreatedAt: { S: now }
             },
             ConditionExpression: "attribute_not_exists(PK)"
         }));
-        console.log(`Created collection metadata for "${collectionId}" in DynamoDB`);
+        console.log(`Created collection metadata for "${collectionName}" (slug: "${collectionId}") in DynamoDB`);
     } catch (err: any) {
         if (err.name === "ConditionalCheckFailedException") {
         } else {
@@ -91,7 +98,7 @@ async function uploadPhoto(filePath: string, collectionId: string) {
 }
 
 async function main() {
-    await ensureCollectionMetadata(collectionId);
+    await ensureCollectionMetadata(collectionId, collectionName);
 
     const files = readdirSync(photosDir)
         .filter(f => /\.(jpg|jpeg|png)$/i.test(f))
@@ -101,7 +108,7 @@ async function main() {
         await uploadPhoto(file, collectionId);
     }
 
-    console.log(`Uploaded ${files.length} photos for collection ${collectionId}`);
+    console.log(`Uploaded ${files.length} photos for collection "${collectionName}" (slug: "${collectionId}")`);
 }
 
 main().catch(err => {
