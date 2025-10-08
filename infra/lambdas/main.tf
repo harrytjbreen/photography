@@ -42,6 +42,10 @@ resource "aws_iam_role_policy_attachment" "api_lambda_dynamodb_policy_attachment
   role       = aws_iam_role.api_lambda_role.name
 }
 
+resource "aws_iam_role_policy_attachment" "api_lambda_basic_execution_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  role       = aws_iam_role.api_lambda_role.name
+}
 
 resource "aws_lambda_function" "lambda" {
   for_each         = var.lambdas

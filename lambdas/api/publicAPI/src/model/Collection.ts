@@ -1,4 +1,4 @@
-export interface CollectionItem {
+export interface Collection {
     Name?: string;
     CreatedAt?: string;
     EntityType?: string;
