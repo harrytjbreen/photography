@@ -1,11 +1,12 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2 } from "aws-lambda";
+import {APIGatewayProxyEventV2, APIGatewayProxyResultV2} from "aws-lambda";
 import {routes} from "./src/routes";
 
 export interface LambdaEvent extends APIGatewayProxyEventV2 {
   pathParams?: Record<string, string>;
 }
 
-export const handler: APIGatewayProxyHandlerV2 = async (event: LambdaEvent) => {
+export type Handler = (event: LambdaEvent) => Promise<APIGatewayProxyResultV2>;
+export const handler = async (event: LambdaEvent): Promise<APIGatewayProxyResultV2> => {
 
   console.log(`Received request: ${JSON.stringify(event, null, 2)}`);
   const { method, path } = event.requestContext.http;
@@ -14,7 +15,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: LambdaEvent) => {
     if (!routeSet) return notFound();
 
     if (routeSet[path]) {
-        return jsonResponse(await routeSet[path](event), 200);
+        return await (routeSet[path] as Handler)(event)
     }
 
     for (const [pattern, handler] of Object.entries(routeSet)) {
@@ -23,7 +24,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: LambdaEvent) => {
             const base = paramMatch[1];
             if (path.startsWith(base)) {
                 event.pathParams = { [paramMatch[2]]: path.slice(base.length + 1) };
-                return await handler(event)
+                return await (handler as Handler)(event)
             }
         }
     }
