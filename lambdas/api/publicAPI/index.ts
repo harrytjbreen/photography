@@ -31,7 +31,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: LambdaEvent) => {
     return notFound();
 };
 
-const jsonResponse = (body: unknown, statusCode = 200): {
+export const jsonResponse = (body: unknown, statusCode = 200): {
     statusCode: number;
     headers: Record<string, string>;
     body: string;

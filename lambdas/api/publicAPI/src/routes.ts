@@ -1,4 +1,3 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
 import { getAllCollections } from "./handlers/collections";
 import { getAllPhotosByCollectionId } from "./handlers/photos";
 import {LambdaEvent} from "../index";
