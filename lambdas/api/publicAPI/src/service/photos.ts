@@ -1,11 +1,11 @@
 import { Photo } from "../model/Photo";
-import { DynamoDBClient, QueryCommand, AttributeValue } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, QueryCommand, QueryCommandOutput, AttributeValue } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 class PhotosService {
     private client = new DynamoDBClient({});
 
-    public getPhotosByCollectionId = async (collectionId: string): Promise<Photo[] | undefined> => {
+    public getPhotosByCollectionId = async (collectionId: string): Promise<Photo[]> => {
         if (!collectionId) throw new Error("Collection name is required");
 
         const params = {
@@ -21,13 +21,26 @@ class PhotosService {
             },
         };
 
-        const result = await this.client.send(new QueryCommand(params));
+        let allItems: Photo[] = [];
+        let lastEvaluatedKey: Record<string, AttributeValue> | undefined = undefined;
+        let result: QueryCommandOutput;
 
-        return (
-            result.Items?.map((item) => {
-                return this.parsePhotoToDTO(item);
-            }).filter((item) => item.S3Key)
-        );
+        do {
+            result = await this.client.send(
+                new QueryCommand({
+                    ...params,
+                    ExclusiveStartKey: lastEvaluatedKey,
+                })
+            );
+
+            const items =
+                result.Items?.map((item) => this.parsePhotoToDTO(item)).filter((p) => p.S3Key) || [];
+
+            allItems = allItems.concat(items);
+            lastEvaluatedKey = result.LastEvaluatedKey;
+        } while (lastEvaluatedKey);
+
+        return allItems;
     };
 
     public parsePhotoToDTO = (item: Record<string, AttributeValue>): Photo => {
