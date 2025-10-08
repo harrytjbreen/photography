@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "generate:routes": "ts-node --transpile-only ./generateRoutes.ts",
+    "generate:routes": "npm ci && ts-node --transpile-only ./generateRoutes.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "esbuild index.ts --bundle --platform=node --target=node22 --outdir=dist --minify",
     "compile": "npm ci && npm run build && cp package.json dist/"
