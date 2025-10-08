@@ -23,7 +23,7 @@ export const handler = async (event: LambdaEvent): Promise<APIGatewayProxyResult
         if (paramMatch) {
             const base = paramMatch[1];
             if (path.startsWith(base)) {
-                event.pathParams = { [paramMatch[2]]: path.slice(base.length + 1) };
+                event.pathParams = { [paramMatch[2]]: path.slice(base.length) };
                 return await (handler as Handler)(event)
             }
         }
@@ -49,5 +49,5 @@ const notFound = (): {
     headers: Record<string, string>;
     body: string;
 } => {
-    return jsonResponse({ message: "Not Found" }, 404);
+    return jsonResponse({ message: "Route not Found" }, 404);
 }
