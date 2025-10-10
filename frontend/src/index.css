@@ -24,6 +24,10 @@ html { scroll-behavior: smooth; }
     to { opacity: 0; }
 }
 
+figure {
+  transform: translateZ(0);
+}
+
 .animate-fade-in-up {
   animation-name: fade-in-up;
   animation-duration: 700ms;
