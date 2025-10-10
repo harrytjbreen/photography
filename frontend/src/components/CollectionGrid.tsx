@@ -22,6 +22,7 @@ const CollectionGrid: FC = () => {
   return (
     <section className="px-4 md:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
+        <h1 className="text-3xl font-semibold mb-6">Collections</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {collections.map((item) => (
             <Link

@@ -45,12 +45,21 @@ Before running the script, compile the TypeScript source (`index.ts`) to JavaScr
 To run the bulk upload script, use the following command:
 
 ```
-npm run run -- --input "folder" --collectionId "collection-slug" --collectionName "Collection Display Name"
+npm run run -- --input "folder" --collectionId "collection-slug" --collectionName "Collection Display Name" --previewFileName "cover.jpg"
 ```
 
 - `--input`: Path to the directory containing photos to upload.
 - `--collectionId`: A slug or unique identifier for the collection (used for organizing files and indexing).
 - `--collectionName`: The human-readable name of the collection for display purposes.
+- `--previewFileName` (optional): Specify the filename of the photo to use as the collection’s preview image. If this option is not provided, the script will choose the preview image automatically or prompt for selection.
+
+Example including `--previewFileName`:
+
+```
+npm run run -- --input "folder" --collectionId "collection-slug" --collectionName "Collection Display Name" --previewFileName "cover.jpg"
+```
+
+If the provided filename does not match any uploaded photo, the script will skip updating the preview image and log a warning.
 
 Both `--collectionId` and `--collectionName` are required to properly categorize and label the uploaded photos within your DynamoDB table and S3 bucket.
 

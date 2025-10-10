@@ -9,12 +9,12 @@ const Home = () => {
         <Title
           title="35mm Photography"
           subtitle="Harry Breen"
-          description="Because film doesn’t come with a delete button."
+          description="A collection of 35mm photographs by me"
         />
         <ScrollHint />
       </section>
 
-      <section id="gallery" className="px-4 md:px-6 lg:px-8 py-8">
+      <section id="gallery" className="px-4 h-screen md:px-6 lg:px-8 py-8">
         <CollectionGrid />
       </section>
     </main>

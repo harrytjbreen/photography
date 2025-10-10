@@ -1,5 +1,5 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { readdirSync, readFileSync } from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
@@ -10,7 +10,6 @@ const REGION = process.env.AWS_REGION || "eu-west-1";
 const BUCKET = process.env.PHOTOS_BUCKET || "photos-storage-688547931126";
 const TABLE = process.env.PHOTOS_TABLE || "photos-app";
 
-// Usage: ts-node bulkAddPhotos.ts ./photos <collectionId> --collectionName "My Collection"
 const argv = yargs(hideBin(process.argv))
     .option("input", {
         type: "string",
@@ -26,6 +25,11 @@ const argv = yargs(hideBin(process.argv))
         type: "string",
         demandOption: true,
         describe: "Human-readable display name of the collection"
+    })
+    .option("previewFileName", {
+        type: "string",
+        demandOption: false,
+        describe: "Filename of the photo to use as the preview image"
     })
     .parseSync();
 
@@ -71,7 +75,7 @@ async function uploadPhoto(filePath: string, collectionId: string) {
     const photoId = uuidv4();
 
     // Upload to S3
-    const s3Key = `collections/${collectionId}/${photoId}-${fileName}`;
+    const s3Key = `collections/${collectionId}/${photoId}.jpg`;
     await s3.send(new PutObjectCommand({
         Bucket: BUCKET,
         Key: s3Key,
@@ -95,6 +99,7 @@ async function uploadPhoto(filePath: string, collectionId: string) {
     }));
 
     console.log(`Saved metadata for ${fileName} in DynamoDB`);
+    return { s3Key, fileName };
 }
 
 async function main() {
@@ -104,11 +109,41 @@ async function main() {
         .filter(f => /\.(jpg|jpeg|png)$/i.test(f))
         .map(f => path.join(photosDir, f));
 
+    const uploadedPhotos: { s3Key: string; fileName: string }[] = [];
     for (const file of files) {
-        await uploadPhoto(file, collectionId);
+        const photoData = await uploadPhoto(file, collectionId);
+        uploadedPhotos.push(photoData);
     }
 
-    console.log(`Uploaded ${files.length} photos for collection "${collectionName}" (slug: "${collectionId}")`);
+    console.log("\nUploaded photos:");
+    uploadedPhotos.forEach((photo, index) => {
+        console.log(`${index + 1}. ${photo.fileName}`);
+    });
+
+    let previewPhoto;
+    if (argv.previewFileName) {
+        previewPhoto = uploadedPhotos.find(photo => photo.fileName === argv.previewFileName);
+    }
+    if (!previewPhoto && uploadedPhotos.length > 0) {
+        previewPhoto = uploadedPhotos[0];
+    }
+
+    if (previewPhoto) {
+        await ddb.send(new UpdateItemCommand({
+            TableName: TABLE,
+            Key: {
+                PK: { S: `COLLECTION#${collectionId}` },
+                SK: { S: `COLLECTION#${collectionId}` }
+            },
+            UpdateExpression: "SET PreviewImageS3Key = :s3key",
+            ExpressionAttributeValues: {
+                ":s3key": { S: previewPhoto.s3Key }
+            }
+        }));
+        console.log(`\nUpdated collection "${collectionName}" with preview image: ${previewPhoto.s3Key}`);
+    }
+
+    console.log(`\nUploaded ${files.length} photos for collection "${collectionName}" (slug: "${collectionId}")`);
 }
 
 main().catch(err => {
