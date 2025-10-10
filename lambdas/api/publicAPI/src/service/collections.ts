@@ -31,7 +31,7 @@ class CollectionsService {
             TableName: process.env.PHOTOS_TABLE,
             Key: {
                 PK: { S: `COLLECTION#${collectionId}` },
-                SK: { S: "COLLECTION" },
+                SK: { S: `COLLECTION#${collectionId}` },
             },
         };
 
