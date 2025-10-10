@@ -40,4 +40,4 @@ runs:
         AWS_REGION: "eu-west-1"
       run: |
         set -euo pipefail
-        aws s3 sync "out" "s3://${{ inputs.bucket }}" --delete
+        aws s3 sync "dist" "s3://${{ inputs.bucket }}" --delete
