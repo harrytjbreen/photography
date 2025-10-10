@@ -75,7 +75,6 @@ jobs:
   frontend_deploy:
     name: Build and deploy frontend
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && (contains(github.event.head_commit.message, 'frontend') || contains(toJson(github.event.commits), 'frontend/')) }}
     permissions:
       id-token: write
       contents: read
