@@ -41,3 +41,14 @@ runs:
       run: |
         set -euo pipefail
         aws s3 sync "dist" "s3://${{ inputs.bucket }}" --delete
+
+    - name: Invalidate CloudFront cache
+      shell: bash
+      env:
+        AWS_REGION: "eu-west-1"
+        DISTRIBUTION_ID: ${{ inputs.cloudfront_distribution_id }}
+      run: |
+        set -euo pipefail
+        aws cloudfront create-invalidation \
+          --distribution-id "$DISTRIBUTION_ID" \
+          --paths "/*"

@@ -88,3 +88,4 @@ jobs:
         with:
           bucket: ${{ vars.FRONTEND_BUCKET }}
           role_to_assume: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}
+          cloudfront_distribution_id: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
