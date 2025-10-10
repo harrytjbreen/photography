@@ -123,3 +123,64 @@ resource "aws_cloudfront_distribution" "api" {
     Name = "photos-api-cf"
   }
 }
+
+resource "aws_cloudfront_origin_access_control" "cdn_oac" {
+  name                              = "photos-cdn-oac"
+  description                       = "OAC for CloudFront to access S3 photo bucket"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_cloudfront_distribution" "cdn" {
+  enabled             = true
+  comment             = "Photos CDN distribution"
+  aliases             = ["cdn.photos.harrybreen.co.uk"]
+  default_root_object = ""
+
+  depends_on = [aws_acm_certificate_validation.cdn]
+
+  origin {
+    domain_name              = aws_s3_bucket.photos_bucket.bucket_regional_domain_name
+    origin_id                = "s3-photos-cdn"
+    origin_access_control_id = aws_cloudfront_origin_access_control.cdn_oac.id
+  }
+
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-photos-cdn"
+
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 86400
+    max_ttl     = 31536000
+  }
+
+  price_class = "PriceClass_100"
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = aws_acm_certificate_validation.cdn.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  tags = {
+    Name = "photos-cdn-cf"
+  }
+}
