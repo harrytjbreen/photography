@@ -45,10 +45,11 @@ class CollectionsService {
 
     private parseCollection = (item: Record<string, AttributeValue>): Collection => {
         return {
-            Name: item.Name?.S ?? "Unknown",
-            CollectionId: item.CollectionId?.S ?? "Unknown",
-            CreatedAt: item.CreatedAt?.S ?? "Unknown",
-            EntityType: item.EntityType?.S ?? "Unknown",
+            Name: item.Name?.S,
+            CollectionId: item.CollectionId?.S,
+            CreatedAt: item.CreatedAt?.S,
+            PreviewImageS3Key: item.PreviewImageS3Key?.S,
+            EntityType: item.EntityType?.S,
         };
     };
 }
