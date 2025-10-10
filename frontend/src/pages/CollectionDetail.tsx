@@ -64,7 +64,7 @@ const CollectionDetail: FC = () => {
             return (
               <figure
                 key={photo.S3Key}
-                className={`overflow-hidden rounded-md${isPortrait ? " row-span-2" : ""}`}
+                className={`overflow-hidden rounded-md ${isPortrait ? "row-span-2" : ""}`}
               >
                 <img
                   src={getFullPhotoPath(photo.S3Key)}
@@ -73,7 +73,7 @@ const CollectionDetail: FC = () => {
                   onDragStart={(e) => e.preventDefault()}
                   loading="lazy"
                   onLoad={(e) => handleImageLoad(photo.S3Key, e)}
-                  className="w-full h-full object-cover select-none"
+                  className="w-full h-full object-cover select-none rounded-md"
                 />
               </figure>
             );
