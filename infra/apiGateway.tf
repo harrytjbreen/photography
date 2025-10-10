@@ -27,7 +27,7 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
 resource "aws_apigatewayv2_integration" "cdn_integration" {
   api_id                 = aws_apigatewayv2_api.main_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "https://${aws_cloudfront_distribution.cdn.domain_name}"
+  integration_uri        = "https://${aws_cloudfront_distribution.cdn.domain_name}/{proxy}"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
