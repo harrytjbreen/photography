@@ -24,6 +24,14 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   payload_format_version = "2.0"
 }
 
+resource "aws_apigatewayv2_integration" "cdn_integration" {
+  api_id                 = aws_apigatewayv2_api.main_api.id
+  integration_type       = "HTTP_PROXY"
+  integration_uri        = aws_cloudfront_distribution.cdn.domain_name
+  integration_method     = "GET"
+  payload_format_version = "1.0"
+}
+
 resource "aws_apigatewayv2_route" "routes" {
   for_each = {
     for pair in flatten([
@@ -39,6 +47,12 @@ resource "aws_apigatewayv2_route" "routes" {
   api_id    = aws_apigatewayv2_api.main_api.id
   route_key = each.value.route_key
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration[each.value.api_name].id}"
+}
+
+resource "aws_apigatewayv2_route" "cdn_route" {
+  api_id    = aws_apigatewayv2_api.main_api.id
+  route_key = "GET /assets/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.cdn_integration.id}"
 }
 
 resource "aws_lambda_permission" "apigw_invoke" {

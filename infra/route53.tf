@@ -25,15 +25,3 @@ resource "aws_route53_record" "photos_api" {
     evaluate_target_health = false
   }
 }
-
-resource "aws_route53_record" "photos_cdn" {
-  zone_id = data.aws_route53_zone.photos_zone.zone_id
-  name    = "cdn.photos.harrybreen.co.uk"
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.cdn.domain_name
-    zone_id                = aws_cloudfront_distribution.cdn.hosted_zone_id
-    evaluate_target_health = false
-  }
-}

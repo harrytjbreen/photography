@@ -135,10 +135,7 @@ resource "aws_cloudfront_origin_access_control" "cdn_oac" {
 resource "aws_cloudfront_distribution" "cdn" {
   enabled             = true
   comment             = "Photos CDN distribution"
-  aliases             = ["cdn.photos.harrybreen.co.uk"]
   default_root_object = ""
-
-  depends_on = [aws_acm_certificate_validation.cdn]
 
   origin {
     domain_name              = aws_s3_bucket.photos_bucket.bucket_regional_domain_name
@@ -175,9 +172,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate_validation.cdn.certificate_arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
+    cloudfront_default_certificate = true
   }
 
   tags = {
